@@ -4,6 +4,7 @@ import json
 import os
 import asyncio
 from datetime import datetime, timezone
+from typing import Optional
 from flight_system import FlightSystem
 from ai_assistant import AIAssistant
 
@@ -48,7 +49,7 @@ async def on_message(message):
         return
     
     # Check if bot is mentioned
-    if bot.user in message.mentions:
+    if bot.user and bot.user in message.mentions:
         # Remove the mention to get the actual user message
         content = message.content.replace(f'<@{bot.user.id}>', '').strip()
         
@@ -284,9 +285,9 @@ async def end_flight(interaction: discord.Interaction):
         await interaction.response.send_message(embed=error_embed, ephemeral=True)
 
 @bot.tree.command(name="pilot_stats", description="View your pilot statistics and rank")
-async def pilot_stats(interaction: discord.Interaction, pilot: discord.Member = None):
+async def pilot_stats(interaction: discord.Interaction, pilot: Optional[discord.Member] = None):
     """View pilot statistics"""
-    target_user = pilot or interaction.user
+    target_user = pilot if pilot else interaction.user
     
     try:
         user_data = flight_system.get_user_stats(target_user.id)
@@ -349,9 +350,9 @@ async def pilot_stats(interaction: discord.Interaction, pilot: discord.Member = 
         await interaction.response.send_message(embed=error_embed, ephemeral=True)
 
 @bot.tree.command(name="logbook", description="View your detailed flight logbook")
-async def logbook(interaction: discord.Interaction, pilot: discord.Member = None):
+async def logbook(interaction: discord.Interaction, pilot: Optional[discord.Member] = None):
     """View detailed flight logbook"""
-    target_user = pilot or interaction.user
+    target_user = pilot if pilot else interaction.user
     
     try:
         flights = flight_system.get_user_flights(target_user.id)
@@ -447,7 +448,8 @@ async def help_command(interaction: discord.Interaction):
     )
     
     embed.set_footer(text="🛫 Lufthansa Virtual Airlines • Guten Flug!")
-    embed.set_thumbnail(url=bot.user.display_avatar.url)
+    if bot.user:
+        embed.set_thumbnail(url=bot.user.display_avatar.url)
     
     await interaction.response.send_message(embed=embed)
 

@@ -12,9 +12,9 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 if not DISCORD_TOKEN:
     raise ValueError("DISCORD_TOKEN environment variable is required")
 
-# Bot intents - basic configuration without privileged intents
+# Bot intents - full configuration with message content
 intents = discord.Intents.default()
-# intents.message_content = True  # Enable this after setting up privileged intents in Discord portal
+intents.message_content = True  # Now enabled in Discord portal
 
 # Initialize bot
 bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
@@ -49,9 +49,12 @@ async def on_message(message):
     
     # Check if bot is mentioned
     if bot.user in message.mentions:
-        # Without message_content intent, we can't read the actual message
-        # So we'll provide a helpful default response
-        content = "Hello! I'm here to help with your Lufthansa Virtual Airlines experience. Use slash commands to interact with me!"
+        # Remove the mention to get the actual user message
+        content = message.content.replace(f'<@{bot.user.id}>', '').strip()
+        
+        # If no message after mention, provide a greeting
+        if not content:
+            content = "Hello! How can I help you today?"
         
         # Get AI response
         try:

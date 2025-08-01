@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from flight_system import FlightSystem
 from ai_assistant import AIAssistant
+from web_server import start_web_server
 
 # Bot configuration
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
@@ -34,6 +35,9 @@ async def on_ready():
     """Bot startup event"""
     print(f'{bot.user} has landed at the gate! ✈️')
     print(f'Serving {len(bot.guilds)} airports worldwide')
+    
+    # Start web server for Render deployment
+    start_web_server()
     
     # Sync slash commands
     try:

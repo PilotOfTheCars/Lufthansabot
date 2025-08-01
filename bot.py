@@ -12,9 +12,9 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 if not DISCORD_TOKEN:
     raise ValueError("DISCORD_TOKEN environment variable is required")
 
-# Bot intents - minimal configuration to avoid privileged intent requirements
+# Bot intents - enable message content for full AI chat functionality
 intents = discord.Intents.default()
-# Removed message_content = True to avoid privileged intent requirement
+intents.message_content = True  # Required to read message content for AI responses
 
 # Initialize bot
 bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
@@ -47,11 +47,10 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-    # Check if bot is mentioned (fallback method without message_content intent)
+    # Check if bot is mentioned
     if bot.user in message.mentions:
-        # For now, provide a simple response since we can't read message content
-        # without privileged intents
-        content = "Hello! I'm here to help with your Lufthansa Virtual Airlines experience."
+        # Remove the mention from the message content
+        content = message.content.replace(f'<@{bot.user.id}>', '').strip()
         
         # Get AI response
         try:

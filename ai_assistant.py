@@ -10,9 +10,11 @@ class AIAssistant:
     def __init__(self):
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        self.openai_client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY", "default_key")
-        )
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+        
+        self.openai_client = OpenAI(api_key=api_key)
         self.model = "gpt-4o"
         
         # System prompt for the AI assistant
@@ -64,7 +66,22 @@ Keep responses concise but helpful. Always maintain the professional yet friendl
             return response.choices[0].message.content.strip()
             
         except Exception as e:
-            # Fallback responses for various scenarios
+            # Log the actual error for debugging
+            print(f"OpenAI API Error: {str(e)}")
+            
+            # Check if it's an API key issue
+            if "api_key" in str(e).lower() or "unauthorized" in str(e).lower():
+                return "*Entschuldigung*, there seems to be an issue with my AI systems. Please contact the administrator to check the API configuration. ✈️"
+            
+            # Check if it's a quota/billing issue
+            if "quota" in str(e).lower() or "insufficient_quota" in str(e).lower():
+                return "*Entschuldigung*, my AI systems are currently offline due to API quota limits. The administrator needs to add billing credits to the OpenAI account. ✈️"
+            
+            # Check if it's a rate limit issue  
+            if "rate_limit" in str(e).lower():
+                return "*Bitte warten*, I'm currently experiencing high demand. Please try again in a moment, Pilot! 🛫"
+            
+            # Generic fallback for other errors
             fallback_responses = [
                 "*Entschuldigung*, I'm having some technical difficulties right now. Please try again in a moment! ✈️",
                 "My communication systems are temporarily offline. *Bitte versuchen Sie es später noch einmal.* 📡",

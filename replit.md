@@ -21,9 +21,11 @@ Preferred communication style: Simple, everyday language.
 - **Local File System**: Data stored in `/data` directory with automatic directory creation
 
 ### AI Integration
-- **OpenAI GPT-4o**: Integrates with OpenAI's latest model for conversational AI
-- **Personality System**: AI assistant has a defined personality combining professional aviation expertise with Lufthansa brand characteristics
-- **Contextual Responses**: System prompt guides the AI to respond as a Lufthansa crew member with aviation knowledge
+- **Shapes API**: Uses Shapes API as primary AI service for cost-effective conversational AI
+- **Intelligent Fallbacks**: Smart pattern-based responses work even without API access
+- **Personality System**: AI assistant embodies professional Lufthansa crew member with aviation expertise
+- **Contextual Responses**: System prompt guides AI to respond with German aviation terminology mixed naturally into English
+- **Dual-Mode Operation**: Full conversational AI with Shapes API, intelligent responses without API
 
 ### Rank Progression System
 - **Five-Tier Structure**: Junior Co-Pilot (0-9h) → Co-Pilot (10-24h) → First Officer (25-49h) → Captain (50-99h) → Senior Captain (100h+)
@@ -43,12 +45,13 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### APIs and Services
-- **OpenAI API**: For AI assistant functionality using GPT-4o model
+- **Shapes API**: Primary AI service for conversational assistant functionality
 - **Discord API**: Core bot functionality through discord.py library
 
 ### Environment Variables
 - **DISCORD_TOKEN**: Required Discord bot authentication token
-- **OPENAI_API_KEY**: Required OpenAI API key for AI assistant features
+- **SHAPESINC_API_KEY**: Shapes API key for advanced AI assistant features (optional)
+- **SHAPESINC_SHAPE_USERNAME**: Shapes AI model username (optional, defaults to "lufthansa-pilot")
 
 ### Python Libraries
 - **discord.py**: Discord bot framework and API wrapper

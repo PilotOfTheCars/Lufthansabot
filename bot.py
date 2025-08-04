@@ -30,15 +30,19 @@ LUFTHANSA_BLUE = 0x05164D
 LUFTHANSA_YELLOW = 0xF9BA00
 LUFTHANSA_GRAY = 0x5A5A5A
 
-# Admin user IDs (replace with actual Discord user IDs of admins)
-ADMIN_IDS = [
-    # Add admin Discord user IDs here
-    # Example: 123456789012345678
-]
+# Admin role ID
+ADMIN_ROLE_ID = 1401863091704303646
 
-def is_admin(user_id: int) -> bool:
-    """Check if user is an admin"""
-    return user_id in ADMIN_IDS or len(ADMIN_IDS) == 0  # If no admins set, allow all (for testing)
+def is_admin(interaction: discord.Interaction) -> bool:
+    """Check if user has the admin role"""
+    if not interaction.guild:
+        return False
+    
+    member = interaction.guild.get_member(interaction.user.id)
+    if not member:
+        return False
+    
+    return any(role.id == ADMIN_ROLE_ID for role in member.roles)
 
 @bot.event
 async def on_ready():
@@ -532,7 +536,7 @@ async def help_command(interaction: discord.Interaction):
 @bot.tree.command(name="reset_pilot_hours", description="[ADMIN] Reset a pilot's flight hours and data")
 async def reset_pilot_hours(interaction: discord.Interaction, pilot: discord.Member):
     """Reset a pilot's flight hours (admin only)"""
-    if not is_admin(interaction.user.id):
+    if not is_admin(interaction):
         embed = discord.Embed(
             title="❌ Access Denied",
             description="This command is restricted to administrators only.",
@@ -569,7 +573,7 @@ async def reset_pilot_hours(interaction: discord.Interaction, pilot: discord.Mem
 @bot.tree.command(name="reset_all_data", description="[ADMIN] Reset ALL flight data - USE WITH CAUTION")
 async def reset_all_data(interaction: discord.Interaction, confirm: str):
     """Reset all flight data (admin only)"""
-    if not is_admin(interaction.user.id):
+    if not is_admin(interaction):
         embed = discord.Embed(
             title="❌ Access Denied",
             description="This command is restricted to administrators only.",
@@ -622,7 +626,7 @@ async def admin_log_flight(interaction: discord.Interaction,
                           aircraft: str = "Unknown",
                           photo: discord.Attachment = None):
     """Admin version of log flight for other users"""
-    if not is_admin(interaction.user.id):
+    if not is_admin(interaction):
         embed = discord.Embed(
             title="❌ Access Denied",
             description="This command is restricted to administrators only.",
@@ -709,7 +713,7 @@ async def admin_log_flight(interaction: discord.Interaction,
 @bot.tree.command(name="export_data", description="[ADMIN] Export all flight data for backup")
 async def export_data(interaction: discord.Interaction):
     """Export all flight data (admin only)"""
-    if not is_admin(interaction.user.id):
+    if not is_admin(interaction):
         embed = discord.Embed(
             title="❌ Access Denied",
             description="This command is restricted to administrators only.",

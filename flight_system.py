@@ -134,7 +134,7 @@ class FlightSystem:
         return f"{bar} {percentage}%"
     
     def log_flight(self, user_id: int, departure: str, arrival: str, 
-                   hours: float, aircraft: str = "Unknown") -> Dict:
+                   hours: float, aircraft: str = "Unknown", photo_url: str = None) -> Dict:
         """Log a completed flight"""
         users = self._load_users()
         flights = self._load_flights()
@@ -165,7 +165,8 @@ class FlightSystem:
             "arrival": arrival,
             "hours": hours,
             "aircraft": aircraft,
-            "timestamp": datetime.now(timezone.utc).timestamp()
+            "timestamp": datetime.now(timezone.utc).timestamp(),
+            "photo_url": photo_url
         }
         
         flights[user_id_str].append(flight_record)
@@ -317,3 +318,95 @@ class FlightSystem:
         pilot_list.sort(key=lambda x: x["total_hours"], reverse=True)
         
         return pilot_list[:limit]
+    
+    def reset_user_data(self, user_id: int) -> Dict:
+        """Reset all data for a specific user (admin function)"""
+        users = self._load_users()
+        flights = self._load_flights()
+        user_id_str = str(user_id)
+        
+        # Remove user data
+        if user_id_str in users:
+            del users[user_id_str]
+        
+        # Remove flight data
+        if user_id_str in flights:
+            del flights[user_id_str]
+        
+        # Save data
+        self._save_users(users)
+        self._save_flights(flights)
+        
+        return {"success": True, "message": "User data reset successfully"}
+    
+    def reset_all_data(self) -> Dict:
+        """Reset all flight and user data (admin function)"""
+        # Clear all data
+        self._save_users({})
+        self._save_flights({})
+        
+        return {"success": True, "message": "All data reset successfully"}
+    
+    def delete_flight(self, user_id: int, flight_index: int) -> Dict:
+        """Delete a specific flight record (admin function)"""
+        users = self._load_users()
+        flights = self._load_flights()
+        user_id_str = str(user_id)
+        
+        if user_id_str not in flights or flight_index >= len(flights[user_id_str]):
+            return {"success": False, "message": "Flight not found"}
+        
+        # Get flight hours to subtract
+        deleted_flight = flights[user_id_str][flight_index]
+        hours_to_subtract = deleted_flight["hours"]
+        
+        # Remove flight
+        del flights[user_id_str][flight_index]
+        
+        # Update user stats
+        if user_id_str in users:
+            users[user_id_str]["total_hours"] -= hours_to_subtract
+            users[user_id_str]["total_flights"] -= 1
+            
+            # Ensure hours don't go negative
+            if users[user_id_str]["total_hours"] < 0:
+                users[user_id_str]["total_hours"] = 0
+            
+            # Update rank
+            users[user_id_str]["rank"] = self.get_rank_from_hours(users[user_id_str]["total_hours"])
+        
+        # Save data
+        self._save_users(users)
+        self._save_flights(flights)
+        
+        return {"success": True, "message": "Flight deleted successfully"}
+    
+    def get_all_users(self) -> Dict:
+        """Get all user data (admin function)"""
+        users = self._load_users()
+        flights = self._load_flights()
+        
+        result = []
+        for user_id, user_data in users.items():
+            user_flights = flights.get(user_id, [])
+            result.append({
+                "user_id": int(user_id),
+                "total_hours": user_data["total_hours"],
+                "total_flights": user_data["total_flights"],
+                "rank": user_data["rank"],
+                "flight_count": len(user_flights),
+                "created": user_data["created"]
+            })
+        
+        return result
+    
+    def export_all_data(self) -> Dict:
+        """Export all data for backup (admin function)"""
+        users = self._load_users()
+        flights = self._load_flights()
+        
+        return {
+            "users": users,
+            "flights": flights,
+            "export_timestamp": datetime.now(timezone.utc).timestamp()
+        }

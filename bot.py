@@ -38,7 +38,12 @@ def is_admin(interaction: discord.Interaction) -> bool:
     if not interaction.guild:
         return False
     
-    member = interaction.guild.get_member(interaction.user.id)
+    # Use interaction.user if it's a Member, otherwise fetch from guild
+    if hasattr(interaction.user, 'roles'):
+        member = interaction.user
+    else:
+        member = interaction.guild.get_member(interaction.user.id)
+    
     if not member:
         return False
     
